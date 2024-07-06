@@ -1,0 +1,45 @@
+version: "3.1"
+services:
+
+  mysql:
+    image: mysql:8.0
+    container_name: ec0607-mysql
+    working_dir: /ec0607
+    volumes:
+      - .:/ec0607
+    environment:
+      - MYSQL_ROOT_PASSWORD=ec0607
+      - MYSQL_DATABASE=ec0607
+      - MYSQL_USER=ec0607
+      - MYSQL_PASSWORD=root
+    ports:
+      - "8002:3306"
+    networks:
+      - ec0607-network
+
+  webserver:
+    image: nginx:alpine
+    container_name: ec0607-webserver
+    working_dir: /ec0607
+    volumes:
+      - .:/ec0607
+      - ./phpdocker/nginx/nginx.conf:/etc/nginx/conf.d/default.conf
+    ports:
+      - "8000:80"
+    tty: true
+    networks:
+      - ec0607-network
+
+  php-fpm:
+    build: phpdocker/php-fpm
+    container_name: ec0607-php
+    working_dir: /ec0607
+    volumes:
+      - .:/ec0607
+      - ./phpdocker/php-fpm/php-ini-overrides.ini:/etc/php/8.2/fpm/conf.d/99-overrides.ini
+    networks:
+      - ec0607-network
+
+networks:
+  ec0607-network:
+    driver: bridge
