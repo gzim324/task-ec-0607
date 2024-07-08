@@ -11,7 +11,7 @@ RUN apt-get update \
        libzip-dev \
        libicu-dev \
     && apt-get clean \
-    && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* /usr/share/doc/* \
+    && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* /usr/share/doc/*
 
 RUN docker-php-ext-install pdo_mysql \
     && docker-php-ext-install zip \
