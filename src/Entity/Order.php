@@ -7,6 +7,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use DateTime;
 
 #[ORM\Entity(repositoryClass: OrderRepository::class)]
 #[ORM\Table(name: '`order`')]
@@ -30,14 +31,15 @@ class Order
     private ?\DateTimeInterface $created = null;
 
     /**
-     * @var Collection<int, Product>
+     * @var Collection<int, OrderProduct>
      */
-    #[ORM\ManyToMany(targetEntity: Product::class)]
-    private Collection $products;
+    #[ORM\OneToMany(targetEntity: OrderProduct::class, mappedBy: 'order')]
+    private Collection $orderProducts;
 
     public function __construct()
     {
-        $this->products = new ArrayCollection();
+        $this->created = new DateTime();
+        $this->orderProducts = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -94,25 +96,31 @@ class Order
     }
 
     /**
-     * @return Collection<int, Product>
+     * @return Collection<int, OrderProduct>
      */
-    public function getProducts(): Collection
+    public function getOrderProducts(): Collection
     {
-        return $this->products;
+        return $this->orderProducts;
     }
 
-    public function addProduct(Product $product): static
+    public function addOrderProduct(OrderProduct $orderProduct): static
     {
-        if (!$this->products->contains($product)) {
-            $this->products->add($product);
+        if (!$this->orderProducts->contains($orderProduct)) {
+            $this->orderProducts->add($orderProduct);
+            $orderProduct->setProduct($this);
         }
 
         return $this;
     }
 
-    public function removeProduct(Product $product): static
+    public function removeOrderProduct(OrderProduct $orderProduct): static
     {
-        $this->products->removeElement($product);
+        if ($this->orderProducts->removeElement($orderProduct)) {
+            // set the owning side to null (unless already changed)
+            if ($orderProduct->getProduct() === $this) {
+                $orderProduct->setProduct(null);
+            }
+        }
 
         return $this;
     }
