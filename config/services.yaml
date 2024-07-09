@@ -26,3 +26,19 @@ services:
     App\EventListener\RequestListener:
         tags:
             - { name: kernel.event_listener, event: kernel.response, method: onKernelResponse }
+
+    App\Service\OrderCalculation\ProductTotalCalculator:
+        tags: [ 'order.calculator' ]
+
+    App\Service\OrderCalculation\VatTotalCalculator:
+        tags: [ 'order.calculator' ]
+
+    App\Service\OrderCalculation\TotalCalculator:
+        arguments:
+            $productTotalCalculator: '@App\Service\OrderCalculation\ProductTotalCalculator'
+            $vatTotalCalculator: '@App\Service\OrderCalculation\VatTotalCalculator'
+        tags: [ 'order.calculator' ]
+
+    App\Service\OrderCalculationService:
+        arguments:
+            $calculators: !tagged order.calculator

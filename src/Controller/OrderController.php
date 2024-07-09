@@ -4,12 +4,14 @@ namespace App\Controller;
 
 use App\Entity\Order;
 use App\Exception\OrderMissingInformationException;
+use App\Service\OrderCalculationService;
 use App\Service\OrderService;
 use App\Service\ResponseService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use App\Exception\ProductNotFoundException;
 use App\Exception\ProductOutOfStockException;
@@ -20,6 +22,7 @@ class OrderController extends AbstractController
         private readonly OrderService $orderService,
         private readonly EntityManagerInterface $entityManager,
         private readonly ResponseService $responseService,
+        private readonly OrderCalculationService $orderCalculationService,
     ) {
     }
 
@@ -56,5 +59,14 @@ class OrderController extends AbstractController
         return $this->responseService->createResponse(
             $this->entityManager->getRepository(Order::class)->find($orderId)
         );
+    }
+
+    #[Route('/test/collector', name: 'test_collector')]
+    public function testCollector(): JsonResponse
+    {
+        $order = $this->entityManager->getRepository(Order::class)->find(1);
+        $calculationResults = $this->orderCalculationService->calculate($order);
+
+        return new JsonResponse($calculationResults, Response::HTTP_OK);
     }
 }
